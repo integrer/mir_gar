@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="org.donampa.nbibik.dipl.MakeApealActivity">
+
+    <ProgressBar
+        android:id="@+id/loading_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        android:layout_marginBottom="192dp"
+        android:layout_marginEnd="128dp"
+        android:layout_marginStart="128dp"
+        android:layout_marginTop="192dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.834"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/main_layout" />
+
+    <LinearLayout
+        android:id="@+id/main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <EditText
+            android:id="@+id/header_text_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:hint="Заголовок" />
+
+        <GridView
+            android:id="@+id/preview_icon_grid"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_height="160dp"
+            android:numColumns="3" />
+
+        <Button
+            android:id="@+id/select_cat_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onButtonClick"
+            android:text="Категория:\nвыберите категорию"
+            android:textAlignment="viewStart" />
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

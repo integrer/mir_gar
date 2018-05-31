@@ -1,11 +1,11 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <!-- ToDo: Customize theme.
          http://developer.alexanderklimov.ru/android/theme.php
          https://material.io/guidelines/style/color.html#
     -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
+    <style name="AppTheme" parent="android:Theme.Material.Light" tools:targetApi="lollipop">
         <!-- Customize your theme here. -->
     </style>
 
