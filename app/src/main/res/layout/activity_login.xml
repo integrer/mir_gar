@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="org.donampa.nbibik.dipl.LoginActivity">
+    tools:context="org.mirgar.LoginActivity">
 
     <!-- Login progress -->
     <ProgressBar
@@ -72,12 +72,12 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/btn_fogot"
+                    android:id="@+id/btn_forgot"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:onClick="onClick"
-                    android:text="@string/btn_fogot" />
+                    android:text="@string/btn_forgot" />
 
                 <Button
                     android:id="@+id/btn_register"

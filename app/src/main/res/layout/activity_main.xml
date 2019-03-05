@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="center_horizontal"
     app:layout_constraintWidth_default="wrap"
-    tools:context="org.donampa.nbibik.dipl.MainActivity">
+    tools:context="org.mirgar.MainActivity">
 
     <ProgressBar
         android:id="@+id/loading_progress"
@@ -60,7 +60,7 @@
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="64dp"
                 android:layout_weight="1"
                 android:src="@mipmap/ic_launcher" />
 
@@ -75,11 +75,6 @@
                 tools:layout_editor_absoluteX="16dp"
                 tools:layout_editor_absoluteY="16dp" />
 
-            <!--<fragment-->
-            <!--android:id="@+id/catlist_fragm"-->
-            <!--android:name="org.donampa.nbibik.dipl.CatlistFragment"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:layout_width="match_parent"/>-->
         </LinearLayout>
 
         <ListView

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <!-- ToDo: Customize theme.
+         http://developer.alexanderklimov.ru/android/theme.php
+         https://material.io/guidelines/style/color.html#
+    -->
+    <style name="AppTheme" parent="android:Theme.Material.Light">
+        <!-- Customize your theme here. -->
+    </style>
+
+</resources>

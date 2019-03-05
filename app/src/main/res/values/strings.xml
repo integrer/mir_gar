@@ -11,7 +11,7 @@
     <string name="error_not_exist_emailpwd_pair">Нет такой пары логин-пароль</string>
     <string name="error_user_banned">Пользователь заболкирован</string>
     <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_invalid_password">Пароль слишьком короткий</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
@@ -19,7 +19,7 @@
     </string>
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>
-    <string name="title_activity_make_apeal">Подать обращение</string>
-    <string name="btn_fogot">Забыли пароль?</string>
+    <string name="title_activity_make_appeal">Подать обращение</string>
+    <string name="btn_forgot">Забыли пароль?</string>
     <string name="btn_register">Зарегистрироваться</string>
 </resources>

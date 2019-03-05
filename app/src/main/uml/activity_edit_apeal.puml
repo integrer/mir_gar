@@ -1,0 +1,37 @@
+@startuml
+Partition EditAppealActivity
+start
+    repeat
+        :onCreate();
+        :onRestoreInstanceState();
+        repeat
+            #gray://Ожидание действия//\n//пользователя//;
+            split
+            -> Выбор\nкатегории;
+                :Запуск формы\nвыбора категории;
+                :Обновить экземпляр\nобращения;
+                :Обновить визуальные\nэлементы;
+            split again
+            -> Отредактировано\nполе;
+                :fgfg;
+                :fgfgf;
+            split again
+            -> Сделать\nфотографию;
+                :Запуск\nприложения камеры;
+                :Сохранение фотографии во\nвнутреннюю папку приложения;
+            end split
+            repeat while (Пользователь находится\nв приложении)
+            :onSaveInstanceState();
+            :onStop();
+    repeat while (Пользователь не вышел\nиз приложения)
+    #red:onDestroy();
+stop
+@enduml
+
+@startuml
+Partition EditAppealActivity::onCreate
+start
+    if (Вызван в первый раз) then (Да)
+        :this.itsAppeal := new Appeal();]
+end
+@enduml

@@ -5,7 +5,7 @@
          http://developer.alexanderklimov.ru/android/theme.php
          https://material.io/guidelines/style/color.html#
     -->
-    <style name="AppTheme" parent="android:Theme.Material.Light" tools:targetApi="lollipop">
+    <style name="AppTheme" parent="android:Theme.Holo.Light">
         <!-- Customize your theme here. -->
     </style>
 

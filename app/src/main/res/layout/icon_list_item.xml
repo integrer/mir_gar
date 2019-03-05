@@ -5,21 +5,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    tools:context="org.donampa.nbibik.dipl.CatListActivity">
+    tools:context="org.mirgar.CatListActivity">
 
-    <ImageView
+    <android.support.v7.widget.AppCompatImageView
         android:id="@+id/cat_list_icon"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="24dp"
         android:layout_weight="1"
-        android:contentDescription="@string/app_name"
-        android:src="@mipmap/ic_launcher_round" />
+        android:scaleType="fitXY"
+        android:contentDescription="@string/app_name" />
 
     <TextView
         android:id="@+id/cat_list_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="left"
+        android:gravity="start"
         android:minHeight="?android:attr/listPreferredItemHeight"
         android:padding="5dp"
         android:textSize="24sp" />

@@ -1,0 +1,7 @@
+@startuml
+
+class UserLoginTask
+
+AsyncTask <|-- UserLoginTask
+
+@enduml

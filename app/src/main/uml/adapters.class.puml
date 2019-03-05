@@ -1,0 +1,11 @@
+@startuml
+
+class IconGreedAdapter
+
+EditAppealActivity +- IconGreedAdapter
+
+BaseAdapter <|-- IconGreedAdapter
+
+hide EditAppealActivity members
+
+@enduml

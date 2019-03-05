@@ -1,0 +1,132 @@
+@startuml
+
+' ---Entity definitions---
+class Activity {
+    # onCreate(Bundle)
+    # onSaveInstanceState(Bundle)
+    # onRestoreInstanceState(Bundle)
+    # onActivityResult(int, int, Intent)
+}
+
+interface OnItemClickListener {
+    + onItemClick(AdapterView<?>, View, int, long)
+}
+note bottom
+    <i>Интерфейс</i>, содержащий метод,
+    который вызывается при активации
+    элемента списка
+end note
+
+package org.donampa.nbibik.dipl {
+    class GeneralActivity {
+        # onCreate(Bundle)
+        # onSaveInstanceState(Bundle)
+        + getLocationPermission(): boolean
+        + getLocation(): Location
+        + isPermissionFineLocation(): boolean
+        + isPermissionChecking: boolean = true
+    }
+    note left
+     Класс, реализующий
+     базовую функциональность
+     классов <i>Activity</i> проекта
+    end note
+
+    class MainActivity {
+        - tv: TextView
+        # onCreate(Bundle)
+        # onSaveInstanceState(Bundle)
+        - loadUsenameFromPref()
+        - swapVisibilty()
+        # onActivityResult(int, int, Intent)
+    }
+    note bottom
+     Отображает
+     список действий,
+     доступных в
+     приложении
+    end note
+
+    class LoginActivity {
+        # onCreate(Bundle)
+        + onClick(View)
+        - isLoginValid(): boolean
+        - isPasswordValid(): boolean
+    }
+    note bottom
+     Класс, отвечающий
+     за авторизацию
+     пользователя
+    end note
+
+    class EditAppealActivity {
+        - photos: List<File>
+        - itsAppeal: Appeal
+        # onCreate(Bundle)
+        # onSaveInstanceState(Bundle)
+        # onRestoreInstanceState(Bundle)
+        - startCatlistActiviry()
+        - startCameraActivity()
+        - offerSaveAsDraft(Runnable)
+        # onActivityResult(int, int, Intent)
+    }
+    note bottom
+        Класс, отвечающий за создание и
+        редактирование обращений
+    end note
+
+    class CatListActivity {
+        # onCreate(Bundle)
+        # onActivityResult(int, int, Intent)
+    }
+    note bottom
+        Реализует визуальное
+        отображение списка категорий
+        обращений для выбора
+        их пользователем
+    end note
+
+    class TextViewActivity {
+        # onCreate(Bundle)
+    }
+    note bottom
+     Отображение
+     тексовой информации
+    end note
+
+    class SplashActivity {
+        # onCreate(Bundle)
+    }
+    note right
+     Отображение
+     начальной
+     заставки
+    end note
+}
+
+' ---Relations---
+Activity <|-- GeneralActivity
+Activity <|-- SplashActivity
+
+GeneralActivity <|-- MainActivity
+GeneralActivity <|-- LoginActivity
+GeneralActivity <|-- EditAppealActivity
+GeneralActivity <|-- TextViewActivity
+GeneralActivity <|-- CatListActivity
+
+OnItemClickListener <|.. EditAppealActivity
+OnItemClickListener <|.. MainActivity
+OnItemClickListener <|.. CatListActivity
+
+AdapterView +-- OnItemClickListener
+
+' ---Specific options---
+hide Activity fields
+hide SplashActivity fields
+hide TextViewActivity fields
+hide LoginActivity fields
+hide CatListActivity fields
+hide OnItemClickListener fields
+hide AdapterView members
+
+@enduml
