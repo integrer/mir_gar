@@ -14,6 +14,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,19 +39,18 @@ import android.widget.TextView;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.apache.commons.io.FileUtils;
-import org.donampa.nbibik.dipl.R;
-import org.mirgar.util.BitmapManufacture;
+import org.jetbrains.annotations.TestOnly;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.mirgar.util.BitmapResizer;
 import org.mirgar.util.Cats;
-import org.mirgar.util.tasks.GetAddressesTask;
 import org.mirgar.util.Logger;
 import org.mirgar.util.PrefManager;
 import org.mirgar.util.db.DbProvider;
 import org.mirgar.util.exceptions.NoCameraException;
 import org.mirgar.util.exceptions.NoLocationException;
+import org.mirgar.util.tasks.GetAddressesTask;
 import org.mirgar.util.tasks.SendAppealTask;
-import org.jetbrains.annotations.TestOnly;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +77,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
 
     private ProgressBar progressView;
     private EditText titleEdtTxt;
-    private EditText descrEdtTxt;
+    BitmapResizer.Rect greedItemParams;
     private GridLayout mainLayout;
     private Spinner addressSpinner;
     private IconGreedAdapter adapter;
@@ -89,7 +89,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
     private File photoFile;
     private File tempPhoto;
     private BidiMap<String, String> nativeSystemLngAddrMap;
-    BitmapManufacture.Rect greedItemParams;
+    private EditText descEdtTxt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +105,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
             setContentView(R.layout.activity_edit_appeal);
             greedItemParams = calcGreedItemParams();
             List<Bitmap> bmps = new LinkedList<>();
-            Bitmap bitmap = BitmapManufacture.makeBitmapFromDrawable(getResources(), R.drawable.ic_add_photo_24dp, getTheme());
+            Bitmap bitmap = BitmapResizer.makeBitmapFromDrawable(getResources(), R.drawable.ic_add_photo_24dp, getTheme());
             if (bitmap != null) bmps.add(bitmap);
             else throw new NullPointerException("Unable to decode resource to bitmap.");
 
@@ -134,15 +134,15 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
             TextWatcher watcher = new EditWatcher();
 
             titleEdtTxt = findViewById(R.id.title_text_edit);
-            descrEdtTxt = findViewById(R.id.description);
+            descEdtTxt = findViewById(R.id.description);
             titleEdtTxt.addTextChangedListener(watcher);
-            descrEdtTxt.addTextChangedListener(watcher);
+            descEdtTxt.addTextChangedListener(watcher);
 
             GridView gridView = findViewById(R.id.preview_icon_grid);
             gridView.setAdapter(adapter);
             gridView.setOnItemClickListener(this);
         } catch (NullPointerException ex) {
-            Logger.e(getClass(), ex);
+            Logger.e(ex);
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder
                     .setTitle(R.string.prompt_err)
@@ -214,7 +214,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                         for(Appeal.Photo photo: itsAppeal.photos)
                             output.add(photo.file.getAbsolutePath());
                         new SendAppealTask(getApplicationContext()).execute(output.toArray(new String [0]));
-                    } catch (JSONException e){
+                    } catch (JSONException ignored) {
 
                     }
                 }
@@ -244,7 +244,8 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                     swapVisibility(mainLayout, progressView);
                 }
             } else
-                Logger.e(getClass(), "No camera feature.");
+                showMessage("В вашем устойстве нет приложения Камера.");
+            Logger.e("No camera feature.");
         } else {
             showPhotoDialog(position);
         }
@@ -260,7 +261,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
         ImageButton cropBtn = popupView.findViewById(R.id.b_crop);
 
         String picturePath = photos.get(position).file.getAbsolutePath();
-        Bitmap pictureBitmap = BitmapManufacture.decodeFile(picturePath);
+        Bitmap pictureBitmap = BitmapResizer.decodeFile(picturePath);
         pics.add(position, pictureBitmap);
 
         deleteBtn.setOnClickListener(
@@ -280,6 +281,12 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                                 dialog.cancel();
                             })
                             .show();
+
+                    try {
+                        cancel.wait();
+                    } catch (InterruptedException e) {
+                        return;
+                    }
 
                     if (!cancel.get()) {
                         // ToDo: place deleting code here
@@ -330,7 +337,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                             short counter = 0;
                             while(loc == null && counter++ < maxTryes) {
                                 loc = getLocation();
-                                Logger.v(getClass(), String.format("Location got: %b", loc));
+                                Logger.v(String.format("Location got: %b", loc));
                             }
                             if(loc == null) throw new NoLocationException();
 
@@ -341,18 +348,22 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
 
                             double avgLat = 0;
                             double avgLnt = 0;
-                            if(itsAppeal.photos.size() > 1)
-                                for (Appeal.Photo photo1: itsAppeal.photos) {
+                            if (itsAppeal.photos.size() > 1) {
+                                for (Appeal.Photo photo1 : itsAppeal.photos) {
                                     avgLat += photo1.latitude;
                                     avgLnt += photo1.longitude;
                                 }
+                                avgLat = avgLat / itsAppeal.photos.size();
+                                avgLnt = avgLnt / itsAppeal.photos.size();
+                            }
                                 else {
                                 avgLat = photo.latitude;
                                 avgLnt = photo.longitude;
                             }
 
-                            if(!(addressSpinner.getAdapter() instanceof ArrayAdapter<?>))
-                                addressSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line));
+                            if (!(addressSpinner.getAdapter() instanceof ArrayAdapter<?> &&
+                                    addressSpinner.getAdapter().getItem(0) instanceof String))
+                                addressSpinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line));
 
                             new GetAddressesTask((ArrayAdapter<String>) addressSpinner.getAdapter(),
                                                  nativeSystemLngAddrMap,
@@ -368,13 +379,13 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                             if (!FileUtils.contentEquals(photoFile, tempPhoto)) throw new IOException("Content of files does not equals!");
 
                             File min = new File(getCacheDir(), "min_" + photoFile.getName());
-                            loaded = BitmapManufacture.loadMinBitmap(photoFile, min, adapter.itemParams);
+                            loaded = BitmapResizer.loadMinBitmap(photoFile, min, adapter.itemParams);
                             adapter.add(loaded);
                         }
                         else {
                             loaded = data.getParcelableExtra("data");
                             if (loaded == null)
-                                Logger.e(getClass(), "Bitmap in extra data does not exist!");
+                                Logger.e("Bitmap in extra data does not exist!");
                             adapter.add(loaded);
                         }
                     } catch (Exception e) {
@@ -403,17 +414,25 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
     }
 
     private void startCameraActivity() throws IOException, NoCameraException {
-        int currentAPIVersion = android.os.Build.VERSION.SDK_INT;
-        String deviceManufacturer = android.os.Build.MANUFACTURER;
+        final int currentAPIVersion = android.os.Build.VERSION.SDK_INT;
+        final String deviceManufacturer = android.os.Build.MANUFACTURER;
+
         Intent cameraIntent;
-        if(currentAPIVersion >= android.os.Build.VERSION_CODES.M && deviceManufacturer.compareTo("samsung") != 0)
+        if (currentAPIVersion >= android.os.Build.VERSION_CODES.M && deviceManufacturer.compareTo("samsung") != 0)
             cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE_SECURE);
         else
             cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         if(cameraIntent.resolveActivity(getPackageManager()) != null) {
             makePhotoFiles();
-            cameraIntent.putExtra("output", Uri.fromFile(tempPhoto));
+
+            Uri photoTmpPath;
+            if (currentAPIVersion >= 24)
+                photoTmpPath = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".file_provider", tempPhoto);
+            else
+                photoTmpPath = Uri.fromFile(tempPhoto);
+
+            cameraIntent.putExtra("output", photoTmpPath);
             startActivityForResult(cameraIntent, CAMERA_ACTIVITY_REQUEST);
         } else throw new NoCameraException();
     }
@@ -430,13 +449,13 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
     }
 
     @NonNull
-    private BitmapManufacture.Rect calcGreedItemParams () {
+    private BitmapResizer.Rect calcGreedItemParams() {
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         float size = Math.max(metrics.heightPixels, metrics.widthPixels);
         size *= 0.9;
         size /= 3;
-        return new BitmapManufacture.Rect(size, size);
+        return new BitmapResizer.Rect(size, size);
     }
 
     @Override
@@ -465,7 +484,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
         super.onSaveInstanceState(outState);
 
         if(nativeSystemLngAddrMap != null) {
-            Logger.v(getClass(), String.format(Locale.getDefault(), "method \"onSaveInstanceState\" - nativeSystemLngAddrMap.size(): %d", nativeSystemLngAddrMap.size()));
+            Logger.v(String.format(Locale.getDefault(), "method \"onSaveInstanceState\" - nativeSystemLngAddrMap.size(): %d", nativeSystemLngAddrMap.size()));
             outState.putStringArray(NATIVE_SYSTEM_LNG_ADDR_MAP_KEYS_FIELD, nativeSystemLngAddrMap.keySet().toArray(new String[0]));
             outState.putStringArray(NATIVE_SYSTEM_LNG_ADDR_MAP_VALS_FIELD, nativeSystemLngAddrMap.values().toArray(new String[0]));
         }
@@ -495,7 +514,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                     }
                 }
 
-                Logger.v(getClass(), String.format(Locale.getDefault(),"method \"onRestoreInstanceState\" - nativeSystemLngAddrMap.size(): %d", nativeSystemLngAddrMap.size()));
+                Logger.v(String.format(Locale.getDefault(), "nativeSystemLngAddrMap.size(): %d", nativeSystemLngAddrMap.size()));
             }
             itsAppeal = new Appeal(savedInstanceState.getString(APPEAL_FIELD, ""));
             isAppealChanged = savedInstanceState.getBoolean(IS_APPEAL_CHANGED_FIELD, false);
@@ -527,7 +546,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
         if (itsAppeal.photos.size() > 0 || itsAppeal.catId != 0
                 || !itsAppeal.title.isEmpty() || !itsAppeal.descr.isEmpty()
                 || isAppealChanged) {
-            Logger.v(getClass(), "onDestroy()");
+            Logger.v("onDestroy()");
 
             Runnable saveAppeal = () -> {
                 DbProvider dbProvider = DbProvider.getInstance();
@@ -573,7 +592,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                 itsAppeal.title = s.toString();
                 isAppealChanged = true;
             }
-            if (s.hashCode() == descrEdtTxt.getText().hashCode()) {
+            if (s.hashCode() == descEdtTxt.getText().hashCode()) {
                 itsAppeal.descr = s.toString();
                 isAppealChanged = true;
             }
@@ -585,18 +604,18 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
         }
     }
 
-    private class IconGreedAdapter extends BaseAdapter {
+    class IconGreedAdapter extends BaseAdapter {
         private List<Bitmap> bmps;
         private GridView.LayoutParams layoutParams = new GridView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         private final Context itsContext;
 
-        private BitmapManufacture.Rect itemParams;
+        private BitmapResizer.Rect itemParams;
 
         IconGreedAdapter(@NonNull Context context, List<Bitmap> bmps) {
             super();
 
             itsContext = context;
-            itemParams = new BitmapManufacture.Rect();
+            itemParams = new BitmapResizer.Rect();
             this.bmps = bmps;
         }
 

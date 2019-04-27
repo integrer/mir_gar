@@ -5,11 +5,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.ArrayAdapter;
 
-import org.mirgar.util.Logger;
-import org.mirgar.util.exceptions.UnsolvableJSONException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mirgar.util.Logger;
+import org.mirgar.util.exceptions.UnsolvableJSONException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -96,7 +96,7 @@ public final class GetAddressesTask extends AsyncTask<Double, Void, Set<String>>
                         try {
                             nativeItems.put(item.getString("place_id"), item.getString("formatted_address"));
                         } catch (JSONException ex) {
-                            Logger.wtf(getClass(), "Unexpected error on json data parsing. Json code: \n" + item.toString(2), ex);
+                            Logger.wtf("Unexpected error on json data parsing. Json code: \n" + item.toString(2), ex);
                         }
                     }
 
@@ -105,7 +105,7 @@ public final class GetAddressesTask extends AsyncTask<Double, Void, Set<String>>
                         try {
                             systemItems.put(item.getString("place_id"), item.getString("formatted_address"));
                         } catch (JSONException ex) {
-                            Logger.wtf(getClass(), "Unexpected error on json data parsing. Json code: \n" + item.toString(2), ex);
+                            Logger.wtf("Unexpected error on json data parsing. Json code: \n" + item.toString(2), ex);
                         }
                     }
 
@@ -133,7 +133,7 @@ public final class GetAddressesTask extends AsyncTask<Double, Void, Set<String>>
                     }
                 return outerMap.keySet();
             } catch (UnsolvableJSONException ex) {
-                Logger.wtf(getClass(), ex.getMessage(), ex);
+                Logger.wtf(ex.getMessage(), ex);
                 userNativeConnection.disconnect();
                 return null;
             } catch (IOException | JSONException ex) {

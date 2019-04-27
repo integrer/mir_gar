@@ -8,10 +8,9 @@ import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
-import org.donampa.nbibik.dipl.R;
 import org.mirgar.util.Logger;
 
-import java.io.File;
+//import java.io.File;
 
 public class TextViewActivity extends GeneralActivity {
 
@@ -19,7 +18,7 @@ public class TextViewActivity extends GeneralActivity {
     public static final String FIELD_TITLE = "wndTitle";
     public static final String FIELD_URL = "url";
 
-    private File itsFile;
+    //private File itsFile;
     private String wndTitle;
     private String url;
 
@@ -79,7 +78,7 @@ public class TextViewActivity extends GeneralActivity {
 
         } catch (NullPointerException ex) {
             showMessageUnknownFail();
-            Logger.e(getClass(), ex);
+            Logger.e(ex);
             finish();
         }
     }

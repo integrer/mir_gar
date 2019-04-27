@@ -27,8 +27,9 @@ import java.io.OutputStream;
  * Created by n.bibik on 10.06.2018.
  */
 
-public class BitmapManufacture extends BitmapFactory {
-    private BitmapManufacture() {}
+public class BitmapResizer extends BitmapFactory {
+    private BitmapResizer() {
+    }
 
     private final static int COMPRESS_QUALITY = 85;
 
@@ -81,13 +82,13 @@ public class BitmapManufacture extends BitmapFactory {
                             out = new FileOutputStream(dst);
                             scaled.compress(Bitmap.CompressFormat.JPEG, COMPRESS_QUALITY, out);
                         } catch (Exception ex) {
-                            Logger.wtf(BitmapManufacture.class, "Error on writing min picture", ex);
+                            Logger.wtf("Error on writing min picture", ex);
                         } finally {
                             try {
                                 if (out != null)
                                     out.close();
                             } catch (IOException ex) {
-                                Logger.wtf(BitmapManufacture.class, "Error on closing min picture output stream", ex);
+                                Logger.wtf("Error on closing min picture output stream", ex);
                             }
                         }
 
@@ -95,7 +96,7 @@ public class BitmapManufacture extends BitmapFactory {
 
                     } else throw new IOException();
             } catch (IOException ex) {
-                Logger.wtf(BitmapManufacture.class, "Error on creating min picture", ex);
+                Logger.wtf("Error on creating min picture", ex);
             }
 
             return scaled;
@@ -110,13 +111,13 @@ public class BitmapManufacture extends BitmapFactory {
         options.inJustDecodeBounds = true;
         decodeFile(srcPath, options);
 
-        ajustOptions(options, req);
+        adjustOptions(options, req);
 
         return decodeFile(srcPath, options);
     }
 
     @Nullable
-    public static Bitmap makeMinBitmap (Bitmap src, File dst, Rect req) {
+    public static Bitmap makeMinBitmap(Bitmap src, File dst, Rect param) {
         // Get the dimensions of the bitmap
         final Options options = new Options();
         try {
@@ -124,7 +125,7 @@ public class BitmapManufacture extends BitmapFactory {
             options.outWidth = src.getWidth();
             options.outHeight = src.getHeight();
 
-            ajustOptions(options, req);
+            adjustOptions(options, param);
 
             OutputStream oStream = new FileOutputStream(dst);
 
@@ -148,7 +149,7 @@ public class BitmapManufacture extends BitmapFactory {
             options.inJustDecodeBounds = true;
             decodeResource(res, resId, options);
 
-            ajustOptions(options, req);
+            adjustOptions(options, req);
         }
 
         return decodeResource(res, resId, options);
@@ -157,31 +158,37 @@ public class BitmapManufacture extends BitmapFactory {
     public static InputStream prepareImage(Bitmap src, File dst, short type) {
         try {
             Bitmap res = null;
-            Logger.v(BitmapManufacture.class, String.format("1 res: %b", res));
+            Logger.v(String.format("1 res: %b", res));
             if (type == 2 || type == 3) {
                 Rect start = new Rect();
                 int size = Math.min(src.getHeight(), src.getWidth());
                 if (size == src.getHeight()) {
                     start.height = 0;
-                    start.width = (src.getWidth() - size) / 2;
+                    start.width = (src.getWidth() - size) / (float) 2;
                 } else {
-                    start.height = (src.getHeight() - size) / 2;
+                    start.height = (src.getHeight() - size) / (float) 2;
                     start.width = 0;
                 }
                 res = Bitmap.createBitmap(src, (int) start.width, (int) start.height, size, size);
-                Logger.v(BitmapManufacture.class, String.format("2 res: %b", res));
+                Logger.v(String.format("2 res: %b", res));
                 if(type == 2) {
                     res = makeMinBitmap(res, dst, new Rect(150, 150));
-                    Logger.v(BitmapManufacture.class, String.format("3 res: %b", res));
+                    Logger.v(String.format("3 res: %b", res));
                 }
                 else res = makeMinBitmap(res, dst, new Rect(56, 56));
             } else if (type == 1) {
                 res = makeMinBitmap(src, dst, new Rect(600, 0));
-                Logger.v(BitmapManufacture.class, String.format("4 res: %b", res));
+                Logger.v(String.format("4 res: %b", res));
             } else res = Bitmap.createBitmap(src);
+
+            if (res == null) {
+                Logger.wtf("Can not get value from file!");
+                return null;
+            }
+
             OutputStream outputStream = new org.apache.commons.io.output.ByteArrayOutputStream();
             InputStream inputStream = new ByteArrayInputStream(new byte[1024]);
-            Logger.v(BitmapManufacture.class, String.format("5 res: %b", res));
+            Logger.v(String.format("5 res: %b", res));
             res.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
             IOUtils.copy(inputStream, outputStream);
             return inputStream;
@@ -192,13 +199,13 @@ public class BitmapManufacture extends BitmapFactory {
     }
 
     public static void prepareImage(File src, File dst, short type) {
-        FileInputStream is = null;
+        FileInputStream is;
         try {
             is = new FileInputStream(src);
+            prepareImage(decodeStream(is), dst, type);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        prepareImage(decodeStream(is), dst, type);
     }
 
 
@@ -230,7 +237,7 @@ public class BitmapManufacture extends BitmapFactory {
     }
 
 
-    private static void ajustOptions (final Options options, Rect req) {
+    private static void adjustOptions(final Options options, Rect req) {
         options.inSampleSize = calculateSampleSize(options, req);//options.outWidth / 600;
 
         // Decode the image file into a Bitmap sized to fill the View

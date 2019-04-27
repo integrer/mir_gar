@@ -1,9 +1,10 @@
 package org.mirgar;
 
-import org.mirgar.util.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mirgar.util.Logger;
 
 import java.io.File;
 import java.util.LinkedHashSet;
@@ -24,6 +25,7 @@ public class Appeal {
     private static final String PHOTOS_JSON = "photos";
 
     public long localId;
+
     public int globalId;
     public int rootCatId;
     public int catId;
@@ -32,18 +34,7 @@ public class Appeal {
     public String address;
     public Set<Photo> photos;
 
-    public Appeal() {
-        localId = 0;
-        globalId = 0;
-        rootCatId = 0;
-        catId = 0;
-        title = "";
-        descr = "";
-        address = "";
-        photos = new LinkedHashSet<>();
-    }
-
-    public Appeal(String jsonStr) {
+    public Appeal(@NotNull String jsonStr) {
         this();
         if (!jsonStr.equals("")) {
             try {
@@ -68,6 +59,69 @@ public class Appeal {
                 e.printStackTrace();
             }
         }
+    }
+
+    public Appeal() {
+        localId = 0;
+        globalId = 0;
+        rootCatId = 0;
+        catId = 0;
+        title = "";
+        descr = "";
+        address = "";
+        photos = new LinkedHashSet<>();
+    }
+
+    public long getLocalId() {
+        return localId;
+    }
+
+    public int getGlobalId() {
+        return globalId;
+    }
+
+    public int getRootCatId() {
+        return rootCatId;
+    }
+
+    public void setRootCatId(int rootCatId) {
+        this.rootCatId = rootCatId;
+    }
+
+    public int getCatId() {
+        return catId;
+    }
+
+    public void setCatId(int catId) {
+        this.catId = catId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(String descr) {
+        this.descr = descr;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Set<Photo> getPhotos() {
+        return photos;
     }
 
     public static class Photo {
@@ -102,14 +156,14 @@ public class Appeal {
                     .put(ADDRESS_JSON, address)
                     .put(PHOTOS_JSON, photoJsonArray);
         } catch (JSONException ex) {
-            Logger.wtf(getClass(), ex);
+            Logger.wtf(ex);
         }
         return result;
     }
 
     public void printJson() {
         try {
-            Logger.v(getClass(), toLocalJson().toString(2));
+            Logger.v(toLocalJson().toString(2));
         } catch (JSONException e) {
             e.printStackTrace();
         }

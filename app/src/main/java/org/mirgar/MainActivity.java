@@ -13,10 +13,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.donampa.nbibik.dipl.R;
 import org.mirgar.util.Cats;
-import org.mirgar.util.LoginErrs;
 import org.mirgar.util.Logger;
+import org.mirgar.util.LoginErrs;
 import org.mirgar.util.PrefManager;
 import org.mirgar.util.tasks.UserLoginTask;
 
@@ -70,7 +69,7 @@ public class MainActivity extends GeneralActivity implements AdapterView.OnItemC
             startActivity(intentSplash);
             Cats.init(this);
             loadUsernameFromPref();
-            Logger.e(getClass(), "Running.");
+            Logger.i("Running.");
             currentMenu = menuCollection.get(MENU_ROOT);
 
 //            try {
@@ -155,6 +154,7 @@ public class MainActivity extends GeneralActivity implements AdapterView.OnItemC
         IconListAdapter.ViewHolder viewHolder = (IconListAdapter.ViewHolder) itemClicked.getTag();
         String strText = viewHolder.text.getText().toString(); // получаем текст нажатого элемента
 
+        label:
         switch (currentMenu.id) {
             case MENU_ROOT:
                 if (strText.equals(ACTION_MAKE)) {
@@ -167,16 +167,21 @@ public class MainActivity extends GeneralActivity implements AdapterView.OnItemC
             case MENU_HELP:
                 byte articleId;
                 String wndTitle;
-                if (strText.equals(ACTION_FAQ)) {
-                    articleId = ARTICLE_FAQ;
-                    wndTitle = ACTION_FAQ;
-                } else if (strText.equals(ACTION_USING_TERMS)) {
-                    changeMenu(MENU_USING_TERMS);
-                    break;
-                } else if (strText.equals(ACTION_ABOUT_PROJECT)) {
-                    articleId = ARTICLE_ABOUT_PROJECT;
-                    wndTitle = ACTION_ABOUT_PROJECT;
-                } else break;
+                switch (strText) {
+                    case ACTION_FAQ:
+                        articleId = ARTICLE_FAQ;
+                        wndTitle = ACTION_FAQ;
+                        break;
+                    case ACTION_USING_TERMS:
+                        changeMenu(MENU_USING_TERMS);
+                        break label;
+                    case ACTION_ABOUT_PROJECT:
+                        articleId = ARTICLE_ABOUT_PROJECT;
+                        wndTitle = ACTION_ABOUT_PROJECT;
+                        break;
+                    default:
+                        break label;
+                }
 
                 Intent textViewActivityIntent = new Intent(this, TextViewActivity.class);
                 textViewActivityIntent.putExtra(TextViewActivity.FIELD_URL, GET_ARTICLES_URL + articleId);
@@ -185,16 +190,22 @@ public class MainActivity extends GeneralActivity implements AdapterView.OnItemC
 
                 break;
             case MENU_USING_TERMS:
-                if (strText.equals(ACTION_MODERATION_RULES)) {
-                    articleId = ARTICLE_MODERATION_RULES;
-                    wndTitle = ACTION_MODERATION_RULES;
-                } else if (strText.equals(ACTION_PROCESSING_RULES)) {
-                    articleId = ARTICLE_PROCESSING_RULES;
-                    wndTitle = ACTION_PROCESSING_RULES;
-                } else if (strText.equals(ACTION_USER_AGREEMENT)) {
-                    articleId = ARTICLE_USER_AGREEMENT;
-                    wndTitle = ACTION_USER_AGREEMENT;
-                } else break;
+                switch (strText) {
+                    case ACTION_MODERATION_RULES:
+                        articleId = ARTICLE_MODERATION_RULES;
+                        wndTitle = ACTION_MODERATION_RULES;
+                        break;
+                    case ACTION_PROCESSING_RULES:
+                        articleId = ARTICLE_PROCESSING_RULES;
+                        wndTitle = ACTION_PROCESSING_RULES;
+                        break;
+                    case ACTION_USER_AGREEMENT:
+                        articleId = ARTICLE_USER_AGREEMENT;
+                        wndTitle = ACTION_USER_AGREEMENT;
+                        break;
+                    default:
+                        break label;
+                }
 
                 textViewActivityIntent = new Intent(this, TextViewActivity.class);
                 textViewActivityIntent.putExtra(TextViewActivity.FIELD_URL, GET_ARTICLES_URL + articleId);
@@ -231,17 +242,17 @@ public class MainActivity extends GeneralActivity implements AdapterView.OnItemC
             String[] curiosityParts = curiosity.split(":", 2);
             String username = curiosityParts[0];
             if (username == null)
-                Logger.e(getClass(), "username == null");
+                Logger.e("username == null");
             String pwd = curiosityParts[1];
             if (pwd == null)
-                Logger.e(getClass(), "pwd == null");
+                Logger.e("pwd == null");
             UserLoginTask loginTask = new UserLoginTask(this, username, pwd);
             loginTask.execute((Void) null);
             loginTask.setOnFinishListener(this);
             return;
         }
 
-        Logger.w(getClass(), "Information about authorisation does not found!");
+        Logger.w("Information about authorisation does not found!");
         Intent loginFormIntent = new Intent(this, LoginActivity.class);
         startActivityForResult(loginFormIntent, LOGIN_ACTIVITY_REQUEST);
     }
@@ -258,7 +269,7 @@ public class MainActivity extends GeneralActivity implements AdapterView.OnItemC
                 View mainLayout = findViewById(R.id.main_layout);
                 View loadingProgress = findViewById(R.id.loading_progress);
                 swapVisibility(mainLayout, loadingProgress);
-                Logger.i(getClass(), "Logged in as \"" + username + "\".");
+                Logger.i("Logged in as \"" + username + "\".");
                 tv.setText("Здравствуйте, Ув. " + username + '!');
         }
     }

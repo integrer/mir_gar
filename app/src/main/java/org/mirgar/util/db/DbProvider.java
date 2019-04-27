@@ -7,9 +7,9 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import org.mirgar.Appeal;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
+import org.mirgar.Appeal;
 
 import java.io.File;
 import java.util.HashSet;
@@ -77,7 +77,7 @@ public class DbProvider {
 
     public void updateAppeal(Appeal appeal, boolean asDraft) {
         ContentValues values = makeContentValues(appeal, asDraft);
-        updateAppeal(appeal.localId, values);
+        updateAppeal(appeal.getLocalId(), values);
     }
 
     public void updateAppealPhotos(long id, Set<Appeal.Photo> photos) {

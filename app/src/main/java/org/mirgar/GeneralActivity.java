@@ -34,7 +34,10 @@ public class GeneralActivity extends Activity {
     private static final int LOCATION_PERMISSION_REQUEST = 1;
     public boolean isPermissionChecking = false;
     private boolean isLocPermission = false;
-    public boolean isLocPermission() { return false; }
+
+    public boolean isLocPermission() {
+        return isLocPermission;
+    }
     private final String IS_LOC_PERMISSION_BUNDLE_ID = "isLocPermission";
 
     private View mainView;
@@ -110,10 +113,10 @@ public class GeneralActivity extends Activity {
                 Thread.sleep(1000);
             } while (LocationListener.isIniting());
         } catch (NoPermissionException ex) {
-            Logger.e(getClass(), ex);
+            Logger.e(ex);
             showMessageNoGpsPermission();
         } catch (Exception e) {
-            Logger.e(getClass(), e);
+            Logger.e(e);
             showMessageUnknownFail();
         }
         return LocationListener.getInstance() != null;
@@ -142,10 +145,10 @@ public class GeneralActivity extends Activity {
                     Thread.sleep(1000);
                 } while (LocationListener.isIniting());
             } catch (NoPermissionException ex) {
-                Logger.e(getClass(), ex);
+                Logger.e(ex);
                 showMessageNoGpsPermission();
-            } catch (Exception e) {
-                Logger.e(getClass(), e);
+            } catch (Exception ex) {
+                Logger.e(ex);
                 showMessageUnknownFail();
             }
         }
@@ -260,7 +263,7 @@ public class GeneralActivity extends Activity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(IS_LOC_PERMISSION_BUNDLE_ID, isLocPermission);
+        outState.putBoolean(IS_LOC_PERMISSION_BUNDLE_ID, isLocPermission());
     }
 
     public void showMessageNoGps() {

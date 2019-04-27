@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 
-import org.donampa.nbibik.dipl.R;
-
 public class SplashActivity extends Activity {
 
     @Override

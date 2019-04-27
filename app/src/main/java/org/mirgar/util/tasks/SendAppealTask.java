@@ -3,11 +3,11 @@ package org.mirgar.util.tasks;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import org.mirgar.util.BitmapManufacture;
-import org.mirgar.util.Logger;
-import org.mirgar.util.exceptions.JSONParsingException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mirgar.util.BitmapResizer;
+import org.mirgar.util.Logger;
+import org.mirgar.util.exceptions.JSONParsingException;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -204,7 +205,7 @@ public class SendAppealTask extends AsyncTask<String, Void, String> {
                     );
                     dos.writeBytes(endl);
 
-                    BitmapManufacture.prepareImage(file, tmp_file, i);
+                    BitmapResizer.prepareImage(file, tmp_file, i);
                     is = new FileInputStream(tmp_file);
 
                     while ((count = is.read(buffer)) != -1) {
@@ -219,7 +220,7 @@ public class SendAppealTask extends AsyncTask<String, Void, String> {
             dos.close();
 
             InputStream is = httpURLConnection.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is, "utf-8");
+            InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
             BufferedReader br = new BufferedReader(isr);
             String buf;
             StringBuilder builder = new StringBuilder();
@@ -244,7 +245,7 @@ public class SendAppealTask extends AsyncTask<String, Void, String> {
                 }
         }
 
-        Logger.i(getClass(), result);
+        Logger.i(result);
         return result;
     }
 }

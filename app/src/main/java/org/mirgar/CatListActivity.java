@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.donampa.nbibik.dipl.R;
 import org.mirgar.util.Cats;
 import org.mirgar.util.Logger;
 
@@ -60,7 +59,7 @@ public class CatListActivity extends GeneralActivity implements ListView.OnItemC
 
         if (parentCatId == 0) {
             itsCaption.setText("Выберите категорию");
-            Logger.d(getClass(), "5");
+            Logger.d("5");
         } else {
             itsCaption.setText("Выберите рубрику");
             itsIcon.setImageResource(cats.getIconId(parentCatId));
@@ -104,7 +103,7 @@ public class CatListActivity extends GeneralActivity implements ListView.OnItemC
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CHILD_ACTIVITY_REQUEST && resultCode == RESULT_OK) {
-            Logger.d(getClass(), "Get result!");
+            Logger.d("Get result!");
             data.putExtra(ROOT_CAT_ID_FIELD, itsCatId);
             data.putExtra(ROOT_CAT_NAME_FIELD, lastSelection);
             setResult(RESULT_OK, data);

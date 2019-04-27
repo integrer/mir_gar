@@ -4,8 +4,8 @@ import android.os.AsyncTask;
 
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
-import org.mirgar.MainActivity;
 import org.jetbrains.annotations.Contract;
+import org.mirgar.MainActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -134,7 +134,7 @@ public class Cats {
 
         @Override
         protected CatsContainer doInBackground(Void... voids) {
-            Logger.i(getClass(), "loadCatsTask started successful.");
+            Logger.i("loadCatsTask started successful.");
             CatsContainer loadedCats = new CatsContainer();
             String linkToCatlist = "https://mirgar.ga/getCat.php";
             try {
@@ -197,14 +197,14 @@ public class Cats {
 
         @Override
         protected void onPostExecute(CatsContainer cats) {
-            Logger.i(getClass(), "PostExecuting...");
+            Logger.i("PostExecuting...");
             context.mapCat = cats.mapCat;
             context.mapRootCat = cats.mapRootCat;
             super.onPostExecute(cats);
             context.ready = true;
             for (OnFinishLoadCategsListener listener : listenersQueue)
                 listener.onFinishLoadCategs(successfully);
-            Logger.i(getClass(), "Finished " + (successfully ? "" : "un") + "successfully.");
+            Logger.i("Finished " + (successfully ? "" : "un") + "successfully.");
             context.task = null;
         }
     }

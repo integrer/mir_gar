@@ -7,12 +7,12 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.view.View;
 
+import org.jetbrains.annotations.Contract;
 import org.mirgar.LoginActivity;
 import org.mirgar.MainActivity;
-import org.donampa.nbibik.dipl.R;
-import org.mirgar.util.LoginErrs;
+import org.mirgar.R;
 import org.mirgar.util.Logger;
-import org.jetbrains.annotations.Contract;
+import org.mirgar.util.LoginErrs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class UserLoginTask extends AsyncTask<Void, Void, LoginErrs> {
 
         try {
             String link =
-                    "https://mirgar.ga/userCheck.php/";
+                    "https://mirgar.ga/modules/mod_mobile_app_support/userCheck.php";
             String data = "?login=" + mLogin
                     + "&pass=" + mPassword;
 
@@ -97,6 +97,7 @@ public class UserLoginTask extends AsyncTask<Void, Void, LoginErrs> {
 
         } catch (IOException e) {
             exception = e;
+            Logger.e(e);
             return LoginErrs.IO;
         }
     }
@@ -123,7 +124,7 @@ public class UserLoginTask extends AsyncTask<Void, Void, LoginErrs> {
                     laContext.mLoginView.setError(laContext.getString(R.string.error_user_banned));
                     break;
                 case IO:
-                    Logger.e(getClass(), exception);
+                    Logger.e(exception);
                     AlertDialog.Builder builder = new AlertDialog.Builder(laContext);
                     builder.setTitle("Внимание!")
                             .setMessage("Возможно, отсутствует подключение интернет! Проверьте ваше подключение к сети.")
@@ -132,7 +133,7 @@ public class UserLoginTask extends AsyncTask<Void, Void, LoginErrs> {
                             .show();
                     break;
                 case MalformedUrl:
-                    Logger.e(getClass(), exception.getLocalizedMessage());
+                    Logger.e(exception.getLocalizedMessage());
                     exception.printStackTrace();
                     break;
             }

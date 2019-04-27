@@ -22,9 +22,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
-import org.donampa.nbibik.dipl.R;
-import org.mirgar.util.tasks.UserLoginTask;
 import org.jetbrains.annotations.Contract;
+import org.mirgar.util.tasks.UserLoginTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,9 +102,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
         }
-        if (checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
+        return checkSelfPermission(READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
         /*if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
             // TODO: alert the user with a Snackbar/AlertDialog giving them the permission rationale
             // To use the Snackbar from the design support library, ensure that the activity extends
@@ -113,12 +110,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         } else {
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
         }*/
-        return false;
     }
 
-    /**
-     * Callback received when a permissions request has been completed.
-     */
+//    /**
+//     * Callback received when a permissions request has been completed.
+//     */
 //    @Override
 //    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
 //                                           @NonNull int[] grantResults) {
@@ -197,9 +193,9 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private boolean isLoginValid(String email) {
         char[] allowedChars = " !\"#$%'()*+,-./:;=?@[\\]^_`{|}~".toCharArray();
         for (char ch : email.toCharArray())
-            if (ch < 'a' && ch > 'z' &&
-                    ch < 'A' && ch > 'Z' &&
-                    ch < '0' && ch > '9' &&
+            if (ch >= 'a' && ch <= 'z' ||
+                    ch >= 'A' && ch <= 'Z' ||
+                    ch >= '0' && ch <= '9' ||
                     contains(allowedChars, ch))
                 return false;
         return true;

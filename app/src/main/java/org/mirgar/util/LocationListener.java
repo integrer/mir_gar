@@ -11,11 +11,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 
-import org.mirgar.GeneralActivity;
-import org.mirgar.util.exceptions.GetLocationException;
-import org.mirgar.util.exceptions.ExceptionWrapper;
-import org.mirgar.util.exceptions.NoPermissionException;
 import org.jetbrains.annotations.Contract;
+import org.mirgar.GeneralActivity;
+import org.mirgar.util.exceptions.ExceptionWrapper;
+import org.mirgar.util.exceptions.GetLocationException;
+import org.mirgar.util.exceptions.NoPermissionException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -90,7 +90,7 @@ public class LocationListener implements android.location.LocationListener {
                 startUp(context, outHandler);
                 startUpFinished.set(true);
             } catch (Exception e) {
-                Logger.e(LocationListener.class, e);
+                Logger.e(e);
                 exceptionWrapper.exception = e;
                 startUpFinished.set(true);
                 isIniting = null;
@@ -104,9 +104,9 @@ public class LocationListener implements android.location.LocationListener {
         do Thread.sleep(1000); while (!startUpFinished.get());
         Exception exception = exceptionWrapper.exception;
         if(exception != null)
-            if (exception instanceof GetLocationException) throw (GetLocationException) exception;
+            if (exception instanceof GetLocationException) throw exception;
             else if (exception instanceof NoPermissionException)
-                throw (NoPermissionException) exception;
+                throw exception;
             else throw exception;
     }
 

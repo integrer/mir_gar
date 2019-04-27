@@ -41,7 +41,7 @@ public class LoadFileTask extends AsyncTask<String, Void, Void> {
                 URL url = new URL(strUrl);
 
             } catch (MalformedURLException e) {
-                Logger.e(getClass(), e);
+                Logger.wtf(e);
             }
         }
         return null;

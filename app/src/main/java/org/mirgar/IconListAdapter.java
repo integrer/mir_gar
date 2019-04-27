@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import org.donampa.nbibik.dipl.R;
-
 import java.util.ArrayList;
 import java.util.Map;
 
