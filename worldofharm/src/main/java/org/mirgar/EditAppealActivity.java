@@ -66,7 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class EditAppealActivity extends GeneralActivity implements Cats.OnFinishLoadCategsListener, AdapterView.OnItemClickListener {
     private final static int CATLIST_ACTIVITY_REQUEST = 2;
     private final static int CAMERA_ACTIVITY_REQUEST = 3;
-    private static final String LOCAL_ID_FIELD = "local id";
+    //private static final String LOCAL_ID_FIELD = "local id";
     private static final String APPEAL_FIELD = "appeal";
     private static final String IS_APPEAL_CHANGED_FIELD = "is appeal changed";
     private static final String NATIVE_SYSTEM_LNG_ADDR_MAP_KEYS_FIELD = "NSLAM keys";
@@ -117,18 +117,23 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
             mainLayout = findViewById(R.id.main_layout);
 
             addressSpinner = findViewById(R.id.address_spinner);
-            ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line);
+            ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                    this, android.R.layout.simple_dropdown_item_1line);
             addressSpinner.setAdapter(spinnerAdapter);
             addressSpinner.setVisibility(View.GONE);
+
+
             addressSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                  @Override
                  public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                     itsAppeal.address = nativeSystemLngAddrMap.get(((TextView) view).getText());
+                     if (view instanceof TextView) {
+                         TextView textView = ((TextView) view);
+                         itsAppeal.address = nativeSystemLngAddrMap.get(textView.getText().toString());
+                     }
                  }
 
                  @Override
                  public void onNothingSelected(AdapterView<?> parent) {}
-
              });
 
             TextWatcher watcher = new EditWatcher();
@@ -361,14 +366,17 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                                 avgLnt = photo.longitude;
                             }
 
-                            if (!(addressSpinner.getAdapter() instanceof ArrayAdapter<?> &&
-                                    addressSpinner.getAdapter().getItem(0) instanceof String))
-                                addressSpinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line));
 
-                            new GetAddressesTask((ArrayAdapter<String>) addressSpinner.getAdapter(),
-                                                 nativeSystemLngAddrMap,
-                                                 () -> addressSpinner.setVisibility(View.VISIBLE))
-                                    .execute(avgLat, avgLnt);
+                            try {
+                                if (!(addressSpinner.getAdapter() instanceof ArrayAdapter<?>))
+                                    addressSpinner.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line));
+
+                                new GetAddressesTask((ArrayAdapter) addressSpinner.getAdapter(),
+                                        nativeSystemLngAddrMap,
+                                        () -> addressSpinner.setVisibility(View.VISIBLE))
+                                        .execute(avgLat, avgLnt);
+                            } catch (ClassCastException ignored) {
+                            }
 
                             itsAppeal.photos.add(photo);
                             itsAppeal.printJson();

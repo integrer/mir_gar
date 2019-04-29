@@ -27,10 +27,10 @@ import java.util.Set;
 
 public final class GetAddressesTask extends AsyncTask<Double, Void, Set<String>> {
     private final Runnable postRunnable;
-    private ArrayAdapter<String> adapter;
+    private ArrayAdapter adapter;
     private Map<String, String> outerMap;
 
-    public GetAddressesTask(@NonNull ArrayAdapter<String> adapter, @NonNull Map<String, String> outerMap, @NonNull Runnable postRunnable) {
+    public GetAddressesTask(@NonNull ArrayAdapter adapter, @NonNull Map<String, String> outerMap, @NonNull Runnable postRunnable) {
         this.adapter = adapter;
         this.postRunnable = postRunnable;
         this.outerMap = outerMap;

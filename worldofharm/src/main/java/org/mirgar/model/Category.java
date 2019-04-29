@@ -9,8 +9,9 @@ import java.util.List;
 
 @Table(name = "Category")
 public class Category extends Model {
-    @Column(name = "Id")
-    public int id;
+    /**
+     * Link to parent category
+     */
     @Column(name = "Parent")
     public Category parent;
     @Column(name = "Name")
