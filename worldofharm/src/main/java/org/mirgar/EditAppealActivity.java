@@ -42,10 +42,13 @@ import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.TestOnly;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mirgar.model.Appeal;
+import org.mirgar.model.Photo;
 import org.mirgar.util.BitmapResizer;
 import org.mirgar.util.Cats;
 import org.mirgar.util.Logger;
 import org.mirgar.util.PrefManager;
+import org.mirgar.util.db.DataContext;
 import org.mirgar.util.db.DbProvider;
 import org.mirgar.util.exceptions.NoCameraException;
 import org.mirgar.util.exceptions.NoLocationException;
@@ -67,8 +70,7 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
     private final static int CATLIST_ACTIVITY_REQUEST = 2;
     private final static int CAMERA_ACTIVITY_REQUEST = 3;
     //private static final String LOCAL_ID_FIELD = "local id";
-    private static final String APPEAL_FIELD = "appeal";
-    private static final String IS_APPEAL_CHANGED_FIELD = "is appeal changed";
+    private static final String APPEAL_ID_FIELD = "appeal_id";
     private static final String NATIVE_SYSTEM_LNG_ADDR_MAP_KEYS_FIELD = "NSLAM keys";
     private static final String NATIVE_SYSTEM_LNG_ADDR_MAP_VALS_FIELD = "NSLAM vals";
 
@@ -182,31 +184,34 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                     ok = false;
                 }
 
-                if (itsAppeal.catId == 0) {
+                if (itsAppeal.category == null) {
                     setCatBtn.setError("Пожалуйста, выберите категорию.");
                     ok = false;
                 }
                 if (ok) {
-                    itsAppeal.descr = ((EditText)findViewById(R.id.description)).getText().toString();
+                    itsAppeal.desc = ((EditText)findViewById(R.id.description)).getText().toString();
                     itsAppeal.title = header;
                     int userId = PrefManager.getInstance().Get(PrefManager.Prefs.USER_ID, 0);
                     double latitude = 0;
                     double longitude = 0;
 
-                    for(Appeal.Photo photo: itsAppeal.photos) {
-                        latitude += photo.latitude;
-                        longitude += photo.longitude;
+                    List<Photo> photos = itsAppeal.photos();
+
+                    for(Photo photo: photos) {
+                        Location loc = photo.getLocation();
+                        latitude += loc.getLatitude();
+                        longitude += loc.getLongitude();
                     }
 
-                    latitude /= itsAppeal.photos.size() * 1.0;
-                    longitude /= itsAppeal.photos.size() * 1.0;
+                    latitude /= photos.size() * 1.0;
+                    longitude /= photos.size() * 1.0;
 
                     JSONObject jsonObject = new JSONObject();
-                    try{
+                    try {
                         jsonObject
                                 .put("user_id", userId)
-                                .put("id_cat", itsAppeal.catId)
-                                .put("description", itsAppeal.descr)
+                                .put("id_cat", itsAppeal.category.globalId)
+                                .put("description", itsAppeal.desc)
                                 .put("title", itsAppeal.title)
                                 .put("address", itsAppeal.address)
                                 .put("latitude", latitude)
@@ -216,12 +221,10 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
 //                                .put("filename3", "");
                         Set<String> output = new LinkedHashSet<>();
                         output.add(jsonObject.toString());
-                        for(Appeal.Photo photo: itsAppeal.photos)
-                            output.add(photo.file.getAbsolutePath());
+                        for(Photo photo: photos)
+                            output.add(photo.getFile().getCanonicalPath());
                         new SendAppealTask(getApplicationContext()).execute(output.toArray(new String [0]));
-                    } catch (JSONException ignored) {
-
-                    }
+                    } catch (JSONException|IOException ignored) {}
                 }
         }
     }
@@ -258,14 +261,16 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
 
     private void showPhotoDialog(int position) {
         CopyOnWriteArrayList<Bitmap> pics = new CopyOnWriteArrayList<>();
-        CopyOnWriteArrayList<Appeal.Photo> photos = new CopyOnWriteArrayList<>(itsAppeal.photos);
+        CopyOnWriteArrayList<Photo> photos = new CopyOnWriteArrayList<>(itsAppeal.photos());
         View popupView = getLayoutInflater().inflate(R.layout.activity_edit_appeal_popup, null);
 
         AppCompatImageView pictureView = new AppCompatImageView(this);
         ImageButton deleteBtn = popupView.findViewById(R.id.b_delete);
         ImageButton cropBtn = popupView.findViewById(R.id.b_crop);
-
-        String picturePath = photos.get(position).file.getAbsolutePath();
+        String picturePath = "";
+        try {
+            picturePath = photos.get(position).getFile().getCanonicalPath();
+        } catch (IOException ignored) {}
         Bitmap pictureBitmap = BitmapResizer.decodeFile(picturePath);
         pics.add(position, pictureBitmap);
 
@@ -319,14 +324,19 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
         switch (requestCode) {
             case CATLIST_ACTIVITY_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    itsAppeal.rootCatId = data.getIntExtra(CatListActivity.ROOT_CAT_ID_FIELD, 0);
-                    itsAppeal.catId = data.getIntExtra(CatListActivity.CAT_ID_FIELD, 0);
-                    isAppealChanged = true;
-                    String rootCatName = data.getStringExtra(CatListActivity.ROOT_CAT_NAME_FIELD);
-                    String catName = data.getStringExtra(CatListActivity.CAT_NAME_FIELD);
-                    if (itsAppeal.rootCatId == 0 || itsAppeal.catId == 0 ||
-                            rootCatName == null || catName == null)
+                    //itsAppeal.rootCatId = data.getIntExtra(CatListActivity.ROOT_CAT_ID_FIELD, 0);
+                    long catId = data.getLongExtra(CatListActivity.CAT_ID_FIELD, 0);
+                    if (catId == 0){
+                        Logger.wtf("Unable to get cat id");
                         return;
+                    }
+
+                    itsAppeal.category = DataContext.getCategory(catId);
+                    itsAppeal.save();
+
+                    String catName = itsAppeal.category.name;
+                    String rootCatName = itsAppeal.category.parent.name;
+
                     Button btn = findViewById(R.id.set_cat_btn);
                     String captionBtnStart = btn.getText().toString().split(":", 2)[0] + ":\n";
                     btn.setText(String.format("%s%s >> %s", captionBtnStart, rootCatName, catName));
@@ -338,32 +348,37 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                         Bitmap loaded;
                         if(data == null) {
                             Location loc = null;
-                            final short maxTryes = 32;
+                            final short maxAttempts = 32;
                             short counter = 0;
-                            while(loc == null && counter++ < maxTryes) {
+                            while(loc == null && counter++ < maxAttempts) {
                                 loc = getLocation();
-                                Logger.v(String.format("Location got: %b", loc));
                             }
                             if(loc == null) throw new NoLocationException();
 
-                            Appeal.Photo photo = new Appeal.Photo();
-                            photo.latitude = loc.getLatitude();
-                            photo.longitude = loc.getLongitude();
-                            photo.file = photoFile;
+                            itsAppeal.save();
+
+                            Photo photo = new Photo();
+                            photo.appeal = itsAppeal;
+                            photo.setLocation(loc);
+                            photo.setFile(photoFile);
+                            photo.save();
+
+                            itsAppeal = DataContext.getAppeal(itsAppeal.getId());
 
                             double avgLat = 0;
                             double avgLnt = 0;
-                            if (itsAppeal.photos.size() > 1) {
-                                for (Appeal.Photo photo1 : itsAppeal.photos) {
-                                    avgLat += photo1.latitude;
-                                    avgLnt += photo1.longitude;
+                            List<Photo> photos = itsAppeal.photos();
+                            if (photos.size() > 1) {
+                                for (Photo _photo : photos) {
+                                    loc = _photo.getLocation();
+                                    avgLat += loc.getLatitude();
+                                    avgLnt += loc.getLongitude();
                                 }
-                                avgLat = avgLat / itsAppeal.photos.size();
-                                avgLnt = avgLnt / itsAppeal.photos.size();
-                            }
-                                else {
-                                avgLat = photo.latitude;
-                                avgLnt = photo.longitude;
+                                avgLat = avgLat / photos.size();
+                                avgLnt = avgLnt / photos.size();
+                            } else {
+                                avgLat = loc.getLatitude();
+                                avgLnt = loc.getLongitude();
                             }
 
 
@@ -378,8 +393,6 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
                             } catch (ClassCastException ignored) {
                             }
 
-                            itsAppeal.photos.add(photo);
-                            itsAppeal.printJson();
                             isAppealChanged = true;
 
                             FileUtils.copyFile(tempPhoto, photoFile);
@@ -496,8 +509,10 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
             outState.putStringArray(NATIVE_SYSTEM_LNG_ADDR_MAP_KEYS_FIELD, nativeSystemLngAddrMap.keySet().toArray(new String[0]));
             outState.putStringArray(NATIVE_SYSTEM_LNG_ADDR_MAP_VALS_FIELD, nativeSystemLngAddrMap.values().toArray(new String[0]));
         }
-        outState.putString(APPEAL_FIELD, itsAppeal.toLocalJsonStr());
-        outState.putBoolean(IS_APPEAL_CHANGED_FIELD, isAppealChanged);
+
+        itsAppeal.save();
+
+        outState.putLong(APPEAL_ID_FIELD, itsAppeal.getId());
     }
 
     @Override
@@ -524,69 +539,71 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
 
                 Logger.v(String.format(Locale.getDefault(), "nativeSystemLngAddrMap.size(): %d", nativeSystemLngAddrMap.size()));
             }
-            itsAppeal = new Appeal(savedInstanceState.getString(APPEAL_FIELD, ""));
-            isAppealChanged = savedInstanceState.getBoolean(IS_APPEAL_CHANGED_FIELD, false);
+            long appealId = savedInstanceState.getLong(APPEAL_ID_FIELD, -1);
+            if (appealId != -1) {
+                itsAppeal = DataContext.getAppeal(appealId);
+            }
         } else if (itsAppeal == null) itsAppeal = new Appeal();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            offerSaveAsDraft(this::finish);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        if (item.getItemId() == android.R.id.home) {
+//            offerSaveAsDraft(this::finish);
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK
-                && event.isTracking() && !event.isCanceled()
-                && event.getEventTime() - lastKey <= 3000) {
-                offerSaveAsDraft(this::finishAffinity);
-                return true;
-            }
-        return super.onKeyUp(keyCode, event);
-    }
-
-
-    private void offerSaveAsDraft(Runnable postRunnable) {
-        if (itsAppeal.photos.size() > 0 || itsAppeal.catId != 0
-                || !itsAppeal.title.isEmpty() || !itsAppeal.descr.isEmpty()
-                || isAppealChanged) {
-            Logger.v("onDestroy()");
-
-            Runnable saveAppeal = () -> {
-                DbProvider dbProvider = DbProvider.getInstance();
-
-                if (dbProvider == null) {
-                    DbProvider.init(this);
-                    dbProvider = DbProvider.getInstance();
-                }
-
-                if (itsAppeal.localId == 0)
-                    dbProvider.insertAppeal(itsAppeal, true);
-                else dbProvider.updateAppeal(itsAppeal, true);
-
-                isAppealChanged = false;
-            };
-
-            new AlertDialog.Builder(this)
-                    .setTitle("Внимание!")
-                    .setMessage("Ваше обращение не сохранено. Сохранить в черновик?")
-                    .setPositiveButton(android.R.string.yes,
-                                       (dialog, which) -> {
-                                            saveAppeal.run();
-                                            postRunnable.run();
-                                       })
-                    .setNegativeButton(android.R.string.no,
-                                       (dialog, which) -> {
-                                            postRunnable.run();
-                                        })
-                    .setCancelable(false)
-                    .show();
-        } else postRunnable.run();
-    }
+//    @Override
+//    public boolean onKeyUp(int keyCode, KeyEvent event) {
+//        if (keyCode == KeyEvent.KEYCODE_BACK
+//                && event.isTracking() && !event.isCanceled()
+//                && event.getEventTime() - lastKey <= 3000) {
+//                offerSaveAsDraft(this::finishAffinity);
+//                return true;
+//            }
+//        return super.onKeyUp(keyCode, event);
+//    }
+//
+//
+//    private void offerSaveAsDraft(Runnable postRunnable) {
+//        if (itsAppeal.photos.size() > 0 || itsAppeal.catId != 0
+//                || !itsAppeal.title.isEmpty() || !itsAppeal.descr.isEmpty()
+//                || isAppealChanged) {
+//            Logger.v("onDestroy()");
+//
+//            Runnable saveAppeal = () -> {
+//                DbProvider dbProvider = DbProvider.getInstance();
+//
+//                if (dbProvider == null) {
+//                    DbProvider.init(this);
+//                    dbProvider = DbProvider.getInstance();
+//                }
+//
+//                if (itsAppeal.localId == 0)
+//                    dbProvider.insertAppeal(itsAppeal, true);
+//                else dbProvider.updateAppeal(itsAppeal, true);
+//
+//                isAppealChanged = false;
+//            };
+//
+//            new AlertDialog.Builder(this)
+//                    .setTitle("Внимание!")
+//                    .setMessage("Ваше обращение не сохранено. Сохранить в черновик?")
+//                    .setPositiveButton(android.R.string.yes,
+//                                       (dialog, which) -> {
+//                                            saveAppeal.run();
+//                                            postRunnable.run();
+//                                       })
+//                    .setNegativeButton(android.R.string.no,
+//                                       (dialog, which) -> {
+//                                            postRunnable.run();
+//                                        })
+//                    .setCancelable(false)
+//                    .show();
+//        } else postRunnable.run();
+//    }
 
     class EditWatcher implements TextWatcher {
         @Override
@@ -598,11 +615,11 @@ public class EditAppealActivity extends GeneralActivity implements Cats.OnFinish
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             if (s.hashCode() == titleEdtTxt.getText().hashCode()) {
                 itsAppeal.title = s.toString();
-                isAppealChanged = true;
+                itsAppeal.save();
             }
             if (s.hashCode() == descEdtTxt.getText().hashCode()) {
-                itsAppeal.descr = s.toString();
-                isAppealChanged = true;
+                itsAppeal.desc = s.toString();
+                itsAppeal.save();
             }
         }
 

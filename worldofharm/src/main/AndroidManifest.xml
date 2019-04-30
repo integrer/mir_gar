@@ -34,7 +34,7 @@
         <!-- Todo: Backup settings. -->
 
         <service
-            android:name="org.mirgar.AppealSender"
+            android:name="org.mirgar.WebService"
             android:enabled="true"
             android:exported="false" />
 
@@ -115,6 +115,9 @@
         <meta-data
             android:name="AA_DB_VERSION"
             android:value="1" />
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="org.mirgar.model.Appeal, org.mirgar.model.Category, org.mirgar.model.Photo" />
         <!--</editor-fold>-->
     </application>
 

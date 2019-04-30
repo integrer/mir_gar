@@ -4,15 +4,18 @@ package org.mirgar;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -24,6 +27,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import org.jetbrains.annotations.NotNull;
 import org.mirgar.util.LocationListener;
 import org.mirgar.util.Logger;
 import org.mirgar.util.PrefManager;
@@ -32,16 +36,44 @@ import org.mirgar.util.exceptions.NoPermissionException;
 public class GeneralActivity extends Activity {
     private static final int LOC_SETTINGS_ACTIVITY_REQUEST = 2;
     private static final int LOCATION_PERMISSION_REQUEST = 1;
+
     public boolean isPermissionChecking = false;
     private boolean isLocPermission = false;
+
+    public WebService webService;
+    public boolean webServiceBound = false;
 
     public boolean isLocPermission() {
         return isLocPermission;
     }
     private final String IS_LOC_PERMISSION_BUNDLE_ID = "isLocPermission";
 
-    private View mainView;
-    private View progressView;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent bindIntent = new Intent(this, WebService.class);
+        //bindService(bindIntent, itsConnection, Context.BIND_AUTO_CREATE);
+    }
+
+
+    private ServiceConnection itsConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(@NotNull ComponentName name, IBinder service) {
+            if (name.equals(WebService.class.getName())) {
+                WebService.Binder binder = (WebService.Binder)service;
+                webService = binder.getService();
+                webServiceBound = true;
+            } else
+                Logger.w("Unexpected service " + name + ". Expected " + WebService.class.getName() + ".");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            webServiceBound = false;
+        }
+    };
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -141,6 +173,7 @@ public class GeneralActivity extends Activity {
 
             try {
                 LocationListener.init(this, handler);
+
                 do {
                     Thread.sleep(1000);
                 } while (LocationListener.isIniting());
@@ -271,7 +304,7 @@ public class GeneralActivity extends Activity {
         builder.setMessage("Пожалуйста, включите GPS. Это необходимо для работы приложения.")
                 .setCancelable(false)
                 .setPositiveButton(android.R.string.yes, (dialog, id) -> startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), LOC_SETTINGS_ACTIVITY_REQUEST))
-                .setNegativeButton(android.R.string.no, (final DialogInterface dialog, @SuppressWarnings("unused") final int id) -> dialog.cancel());
+                .setNegativeButton(android.R.string.no, (dialog, id) -> dialog.cancel());
         final AlertDialog alert = builder.create();
         alert.show();
     }

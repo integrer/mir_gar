@@ -5,13 +5,17 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 
+import com.activeandroid.Cache;
+
 import org.jetbrains.annotations.Contract;
+import org.mirgar.BuildConfig;
 import org.mirgar.GeneralActivity;
 import org.mirgar.util.exceptions.ExceptionWrapper;
 import org.mirgar.util.exceptions.GetLocationException;

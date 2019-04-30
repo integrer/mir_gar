@@ -15,6 +15,11 @@ public final class DataContext {
     }
 
     @NotNull
+    public static Appeal getAppeal(long id) {
+        return getAppeals().where("Id = ?", id).executeSingle();
+    }
+
+    @NotNull
     public static From getLocalAppeals() {
         return getAppeals().and("GlobalId ISNULL");
     }
@@ -24,9 +29,15 @@ public final class DataContext {
         return getLocalAppeals().and("IsDraft");
     }
 
+
     @NotNull
     public static From getCategories() {
         return new Select().from(Category.class);
+    }
+
+
+    public static Category getCategory(long localId) {
+        return getCategories().where("Id = ?", localId).executeSingle();
     }
 
     @NotNull

@@ -30,17 +30,15 @@ public class Photo extends Model {
     ///////////////////////////////////////////////////////////////////////////
 
 
-    // <editor-fold desc="Location access methods">
     @Column(name = "Location")
     private byte[] location;
+
+    // <editor-fold desc="Location access methods">
     /**
      * Contains pass to file of photo on devise. Must contain string
      * representation of file URI, that disappear in data directory of this
      * application.
      */
-    @Column(name = "FilePath")
-    private String filePath;
-
     public Location getLocation() {
         Parcel parc = Parcel.obtain();
         parc.unmarshall(location, 0, location.length);
@@ -49,13 +47,6 @@ public class Photo extends Model {
         parc.recycle();
         return loc;
     }
-    // </editor-fold>
-
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Its file location
-    ///////////////////////////////////////////////////////////////////////////
-
     //Todo: add checking for location is correct
     public void setLocation(Location loc) {
         Parcel parc = Parcel.obtain();
@@ -63,6 +54,15 @@ public class Photo extends Model {
         location = parc.marshall();
         parc.recycle();
     }
+    // </editor-fold>
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Its file location
+    ///////////////////////////////////////////////////////////////////////////
+
+    @Column(name = "FilePath")
+    private String filePath;
 
     // <editor-fold desc="Photo file access methods">
     public File getFile() {

@@ -59,7 +59,6 @@ public class CatListActivity extends GeneralActivity implements ListView.OnItemC
 
         if (parentCatId == 0) {
             itsCaption.setText("Выберите категорию");
-            Logger.d("5");
         } else {
             itsCaption.setText("Выберите рубрику");
             itsIcon.setImageResource(cats.getIconId(parentCatId));

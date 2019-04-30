@@ -8,15 +8,16 @@ import android.text.format.DateFormat;
 
 import java.sql.Date;
 
-public class AppealSender extends Service {
+public class WebService extends Service {
 
     private int maxValue;
     private int currentProgress;
 
+    private Binder binder = new Binder();
+
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return binder;
     }
 
     private void sendAppeal(long localId) {
@@ -25,6 +26,12 @@ public class AppealSender extends Service {
         //send to server
 
 //        }
+    }
+
+    public class Binder extends android.os.Binder {
+        WebService getService(){
+            return WebService.this;
+        }
     }
 
     private void createNotofication() {

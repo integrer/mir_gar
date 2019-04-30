@@ -197,8 +197,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                     ch >= 'A' && ch <= 'Z' ||
                     ch >= '0' && ch <= '9' ||
                     contains(allowedChars, ch))
-                return false;
-        return true;
+                return true;
+        return false;
 //        return Pattern.matches(
 //                "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$",
 //                email);

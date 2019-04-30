@@ -8,6 +8,10 @@ import java.util.List;
 
 @Table(name = "Appeals")
 public class Appeal extends Model {
+    public Appeal() {
+        isDraft = true;
+    }
+
 
     /**
      * Identifier in global database.
@@ -39,6 +43,8 @@ public class Appeal extends Model {
      */
     @Column(name = "IsDraft")
     public boolean isDraft;
+    @Column(name = "Address")
+    public String address;
 
     /**
      * Returns photos, that attached to it
